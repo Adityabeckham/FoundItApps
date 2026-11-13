@@ -1,17 +1,44 @@
-# foundit
+﻿# FoundIt
 
-A new Flutter project.
+Lost it? Let's Find It Together.
 
-## Getting Started
+## Deskripsi
 
-This project is a starting point for a Flutter application.
+FoundIt adalah aplikasi pencarian dan pengelolaan barang hilang berbasis komunitas. Pengguna dapat melaporkan barang hilang atau ditemukan, mencari dan memfilter katalog, serta mengklaim barang dengan pertanyaan rahasia.
 
-A few resources to get you started if this is your first Flutter project:
+## Fitur MVP UTS
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+- Dashboard katalog
+- Form laporan
+- Pencarian dan filter
+- Klaim dengan pertanyaan rahasia maks. 3x dan status Open/Resolved
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech Stack
+
+- Flutter
+- Dart
+- Provider
+- intl
+
+## Anggota Kelompok
+
+| Nama | NIM | Peran |
+|------|-----|-------|
+| (Nama 1) | (NIM 1) | (Peran 1) |
+| (Nama 2) | (NIM 2) | (Peran 2) |
+
+
+## Cara Menjalankan
+
+```bash
+flutter pub get
+flutter run -d chrome
+```
+
+Untuk Android, sambungkan perangkat lalu jalankan:
+
+```bash
+flutter run
+```
+
+Versi Flutter: (isi hasil `flutter --version`)
