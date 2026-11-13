@@ -31,6 +31,12 @@ FoundIt adalah aplikasi pencarian dan pengelolaan barang hilang berbasis komunit
 ## Cara Menjalankan
 
 ```bash
+
+Versi Flutter Cek:  `flutter --version`)
+```
+
+
+```bash
 flutter pub get
 flutter run -d chrome
 ```
@@ -41,4 +47,3 @@ Untuk Android, sambungkan perangkat lalu jalankan:
 flutter run
 ```
 
-Versi Flutter: (isi hasil `flutter --version`)
