@@ -1,5 +1,12 @@
 ﻿import 'package:flutter/material.dart';
 
+import 'screens/dashboard_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/onboarding1_screen.dart';
+import 'screens/onboarding2_screen.dart';
+import 'theme/app_theme.dart';
+import 'utils/app_transitions.dart';
+
 void main() {
   runApp(const FoundItApp());
 }
@@ -13,16 +20,27 @@ class FoundItApp extends StatelessWidget {
     return MaterialApp(
       title: 'FoundIt',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 3, 46, 131),
-        ),
-        useMaterial3: true,
-      ),
-      home: Scaffold(
-        appBar: AppBar(title: Center(child: Text('FoundIt'))),
-        body: Center(child: Text("Lost it? Let's Find It Together.")),
-      ),
+      theme: AppTheme.light,
+      initialRoute: '/',
+      onGenerateRoute: (settings) {
+        final Widget page;
+        switch (settings.name) {
+          case '/onboarding2':
+            page = const Onboarding2Screen();
+            break;
+          case '/login':
+            page = const LoginScreen();
+            break;
+          case '/dashboard':
+            page = const DashboardScreen();
+            break;
+          case '/':
+          default:
+            page = const Onboarding1Screen();
+        }
+        return slideFadeRoute(page);
+      },
     );
   }
 }
+
