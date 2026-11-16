@@ -3,8 +3,8 @@
 /// Transisi halaman FoundIt: slide halus dari kanan + fade.
 Route<dynamic> slideFadeRoute(Widget page) {
   return PageRouteBuilder<dynamic>(
-    transitionDuration: const Duration(milliseconds: 420),
-    reverseTransitionDuration: const Duration(milliseconds: 320),
+    transitionDuration: const Duration(milliseconds: 900),
+    reverseTransitionDuration: const Duration(milliseconds: 900),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       final CurvedAnimation curved = CurvedAnimation(
@@ -24,4 +24,3 @@ Route<dynamic> slideFadeRoute(Widget page) {
     },
   );
 }
-
