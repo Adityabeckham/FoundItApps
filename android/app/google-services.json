@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "193892917634",
+    "project_id": "foundit-apps",
+    "storage_bucket": "foundit-apps.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:193892917634:android:e1bd2c36097c037a83af9b",
+        "android_client_info": {
+          "package_name": "com.foundit.foundit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCsdf007cCxkFgPhR7R-jSsjkqws6EPjH0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+﻿// File: main.dart
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
@@ -7,7 +9,13 @@ import 'screens/onboarding2_screen.dart';
 import 'theme/app_theme.dart';
 import 'utils/app_transitions.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const FoundItApp());
 }
 
@@ -43,4 +51,3 @@ class FoundItApp extends StatelessWidget {
     );
   }
 }
-
