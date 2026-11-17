@@ -113,7 +113,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             AppBottomNav(
               selectedIndex: _navIndex,
-              onTap: (index) => setState(() => _navIndex = index),
+              onTap: (index) {
+                if (index == 4) {
+                  Navigator.pushNamed(context, '/profile');
+                  return;
+                }
+                setState(() => _navIndex = index);
+              },
             ),
           ],
         ),
@@ -272,5 +278,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+
 
 
