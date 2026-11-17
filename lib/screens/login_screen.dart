@@ -231,9 +231,17 @@ class LoginScreen extends StatelessWidget {
                 backgroundColor: Colors.white,
                 textColor: const Color(0xFF1E293B),
                 logoPath: 'assets/images/google-logo.png',
-                onPressed: () {
-                  context.read<AuthProvider>().signIn('Aditya Beckham');
-                  Navigator.pushNamed(context, '/dashboard');
+                onPressed: () async {
+                  final AuthProvider auth = context.read<AuthProvider>();
+                  final bool ok = await auth.signInWithGoogle();
+                  if (!context.mounted) return;
+                  if (ok) {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context, '/dashboard', (route) => false);
+                  } else if (auth.error != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(auth.error!)));
+                  }
                 },
               ),
               const SizedBox(height: AppSpacing.s12),
@@ -243,8 +251,13 @@ class LoginScreen extends StatelessWidget {
                 textColor: const Color.fromARGB(255, 255, 255, 255),
                 logoPath: 'assets/images/apple-logo.png',
                 onPressed: () {
-                  context.read<AuthProvider>().signIn('Aditya Beckham');
-                  Navigator.pushNamed(context, '/dashboard');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Sign in with Apple belum tersedia (membutuhkan akun developer berbayar).',
+                      ),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: AppSpacing.s24),
@@ -357,5 +370,8 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
+
+
 
 
