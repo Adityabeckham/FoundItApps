@@ -49,7 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 AppSpacing.s20,
                 0,
               ),
-              child: _buildHeader(authProvider.userName ?? 'Aditya Beckham'),
+              child: _buildHeader(authProvider.displayName),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -272,4 +272,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+
 

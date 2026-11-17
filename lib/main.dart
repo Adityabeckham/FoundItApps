@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/item_provider.dart';
+import 'screens/auth_gate.dart';
 import 'theme/app_theme.dart';
 import 'utils/app_router.dart';
 
@@ -25,7 +26,7 @@ class FoundItApp extends StatelessWidget {
         title: 'FoundIt',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
-        initialRoute: '/',
+        home: const AuthGate(),
         onGenerateRoute: AppRouter.onGenerateRoute,
       ),
     );
