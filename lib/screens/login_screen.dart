@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_spacing.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -230,6 +232,7 @@ class LoginScreen extends StatelessWidget {
                 textColor: const Color(0xFF1E293B),
                 logoPath: 'assets/images/google-logo.png',
                 onPressed: () {
+                  context.read<AuthProvider>().signIn('Aditya Beckham');
                   Navigator.pushNamed(context, '/dashboard');
                 },
               ),
@@ -240,6 +243,7 @@ class LoginScreen extends StatelessWidget {
                 textColor: const Color.fromARGB(255, 255, 255, 255),
                 logoPath: 'assets/images/apple-logo.png',
                 onPressed: () {
+                  context.read<AuthProvider>().signIn('Aditya Beckham');
                   Navigator.pushNamed(context, '/dashboard');
                 },
               ),
@@ -353,4 +357,5 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
 

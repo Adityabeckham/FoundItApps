@@ -1,7 +1,9 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../data/dummy_reports.dart';
 import '../models/item_report.dart';
+import '../providers/auth_provider.dart';
+import '../providers/item_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -26,35 +28,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Kunci',
   ];
 
-  int _filterIndex = 0;
   int _navIndex = 0;
-
-  List<ItemReport> get _filteredReports {
-    switch (_filterIndex) {
-      case 1:
-        return dummyReports.where((report) => report.isLost).toList();
-      case 2:
-        return dummyReports.where((report) => !report.isLost).toList();
-      case 3:
-        return dummyReports
-            .where((report) => report.category == 'Dompet')
-            .toList();
-      case 4:
-        return dummyReports
-            .where((report) => report.category == 'Elektronik')
-            .toList();
-      case 5:
-        return dummyReports
-            .where((report) => report.category == 'Kunci')
-            .toList();
-      default:
-        return dummyReports;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final List<ItemReport> reports = _filteredReports;
+    final ItemProvider itemProvider = context.watch<ItemProvider>();
+    final AuthProvider authProvider = context.watch<AuthProvider>();
+    final List<ItemReport> reports = itemProvider.filteredItems;
 
     return Scaffold(
       backgroundColor: AppColors.bgScreen,
@@ -69,7 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 AppSpacing.s20,
                 0,
               ),
-              child: _buildHeader(),
+              child: _buildHeader(authProvider.userName ?? 'Aditya Beckham'),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -78,7 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 AppSpacing.s20,
                 0,
               ),
-              child: _buildSearchRow(),
+              child: _buildSearchRow(itemProvider),
             ),
             const SizedBox(height: AppSpacing.s16),
             SizedBox(
@@ -91,7 +71,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 itemCount: _filters.length,
                 separatorBuilder: (context, index) =>
                     const SizedBox(width: AppSpacing.s8),
-                itemBuilder: (context, index) => _buildFilterChip(index),
+                itemBuilder: (context, index) =>
+                    _buildFilterChip(index, itemProvider),
               ),
             ),
             Expanded(
@@ -140,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(String name) {
     return Row(
       children: [
         Expanded(
@@ -156,7 +137,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 2),
               Text(
-                'Aditya Beckham',
+                name,
                 style: AppTextStyles.titleL16,
               ),
             ],
@@ -180,7 +161,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSearchRow() {
+  Widget _buildSearchRow(ItemProvider itemProvider) {
     return Row(
       children: [
         Expanded(
@@ -202,6 +183,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: AppSpacing.s10),
                 Expanded(
                   child: TextField(
+                    onChanged: itemProvider.setQuery,
                     style: AppTextStyles.bodyM13,
                     decoration: InputDecoration(
                       hintText: 'Cari barang hilang atau ditemukan',
@@ -242,10 +224,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildFilterChip(int index) {
-    final bool selected = _filterIndex == index;
+  Widget _buildFilterChip(int index, ItemProvider itemProvider) {
+    final bool selected = itemProvider.filterIndex == index;
     return GestureDetector(
-      onTap: () => setState(() => _filterIndex = index),
+      onTap: () => itemProvider.setFilter(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
