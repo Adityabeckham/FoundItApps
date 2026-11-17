@@ -1,21 +1,12 @@
-﻿// File: main.dart
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import 'screens/dashboard_screen.dart';
-import 'screens/login_screen.dart';
-import 'screens/onboarding1_screen.dart';
-import 'screens/onboarding2_screen.dart';
+import 'providers/auth_provider.dart';
+import 'providers/item_provider.dart';
 import 'theme/app_theme.dart';
-import 'utils/app_transitions.dart';
+import 'utils/app_router.dart';
 
-import 'firebase_options.dart';
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+void main() {
   runApp(const FoundItApp());
 }
 
@@ -25,29 +16,18 @@ class FoundItApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FoundIt',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      initialRoute: '/',
-      onGenerateRoute: (settings) {
-        final Widget page;
-        switch (settings.name) {
-          case '/onboarding2':
-            page = const Onboarding2Screen();
-            break;
-          case '/login':
-            page = const LoginScreen();
-            break;
-          case '/dashboard':
-            page = const DashboardScreen();
-            break;
-          case '/':
-          default:
-            page = const Onboarding1Screen();
-        }
-        return slideFadeRoute(page);
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+        ChangeNotifierProvider<ItemProvider>(create: (_) => ItemProvider()),
+      ],
+      child: MaterialApp(
+        title: 'FoundIt',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        initialRoute: '/',
+        onGenerateRoute: AppRouter.onGenerateRoute,
+      ),
     );
   }
 }
