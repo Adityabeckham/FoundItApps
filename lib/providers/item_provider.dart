@@ -11,7 +11,7 @@ import '../theme/app_colors.dart';
 class ItemProvider extends ChangeNotifier {
   final List<ItemReport> _items = List<ItemReport>.of(dummyReports);
   String _query = '';
-  int _filterIndex = 0;
+  String _filter = 'Semua';
 
   ItemProvider() {
     if (Firebase.apps.isNotEmpty) {
@@ -21,27 +21,21 @@ class ItemProvider extends ChangeNotifier {
 
   List<ItemReport> get items => List<ItemReport>.unmodifiable(_items);
   String get query => _query;
-  int get filterIndex => _filterIndex;
+  String get filter => _filter;
 
   List<ItemReport> get filteredItems {
     Iterable<ItemReport> result = _items;
-    switch (_filterIndex) {
-      case 1:
+    switch (_filter) {
+      case 'Hilang':
         result = result.where((report) => report.isLost);
         break;
-      case 2:
+      case 'Ditemukan':
         result = result.where((report) => !report.isLost);
         break;
-      case 3:
-        result = result.where((report) => report.category == 'Dompet');
-        break;
-      case 4:
-        result = result.where((report) => report.category == 'Elektronik');
-        break;
-      case 5:
-        result = result.where((report) => report.category == 'Kunci');
+      case 'Semua':
         break;
       default:
+        result = result.where((report) => report.category == _filter);
         break;
     }
     final String q = _query.trim().toLowerCase();
@@ -49,7 +43,8 @@ class ItemProvider extends ChangeNotifier {
       result = result.where(
         (report) =>
             report.title.toLowerCase().contains(q) ||
-            report.location.toLowerCase().contains(q),
+            report.location.toLowerCase().contains(q) ||
+            (report.description ?? '').toLowerCase().contains(q),
       );
     }
     return result.toList();
@@ -60,8 +55,8 @@ class ItemProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setFilter(int index) {
-    _filterIndex = index;
+  void setFilter(String value) {
+    _filter = value;
     notifyListeners();
   }
 
@@ -103,6 +98,7 @@ class ItemProvider extends ChangeNotifier {
       isLost: (d['isLost'] as bool?) ?? true,
       thumbBackground: AppColors.categoryBlueBg,
       category: (d['category'] as String?) ?? 'Lainnya',
+      description: d['description'] as String?,
       status: (d['status'] as String?) ?? ReportStatus.open,
       secretQuestions: (d['secretQuestions'] as List<dynamic>?)
               ?.map((e) => e.toString())
@@ -115,3 +111,4 @@ class ItemProvider extends ChangeNotifier {
     );
   }
 }
+

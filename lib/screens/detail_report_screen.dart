@@ -125,8 +125,8 @@ class DetailReportScreen extends StatelessWidget {
                         Text('Ciri khusus', style: AppTextStyles.titleM14),
                         const SizedBox(height: AppSpacing.s6),
                         Text(
-                          'Gantungan kunci kulit warna cokelat dengan inisial huruf R. '
-                          'Kunci terdiri dari 2 buah dengan remote alarm.',
+                          item.description ??
+                          'Tidak ada ciri khusus yang dicantumkan.',
                           style: AppTextStyles.bodyM13.copyWith(
                             color: AppColors.textSecondary,
                             height: 1.5,
@@ -289,5 +289,6 @@ class DetailReportScreen extends StatelessWidget {
 }
 
 ItemReport dummyFallback() => dummyReports.first;
+
 
 
