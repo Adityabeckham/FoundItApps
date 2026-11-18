@@ -115,6 +115,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             AppBottomNav(
               selectedIndex: _navIndex,
               onTap: (index) {
+                if (index == 2) {
+                  Navigator.pushNamed(context, '/report');
+                  return;
+                }
                 if (index == 4) {
                   Navigator.pushNamed(context, '/profile');
                   return;
@@ -279,6 +283,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+
 
 
 

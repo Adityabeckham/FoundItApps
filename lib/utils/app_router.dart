@@ -7,6 +7,7 @@ import '../screens/profile_screen.dart';
 import '../models/item_report.dart';
 import '../screens/onboarding1_screen.dart';
 import '../screens/onboarding2_screen.dart';
+import '../screens/report_form_screen.dart';
 import '../utils/app_transitions.dart';
 
 /// Route table terpusat FoundIt.
@@ -28,6 +29,9 @@ class AppRouter {
       case '/profile':
         page = const ProfileScreen();
         break;
+      case '/report':
+        page = const ReportFormScreen();
+        break;
       case '/detail':
         page = DetailReportScreen(
           report: settings.arguments as ItemReport?,
@@ -40,5 +44,6 @@ class AppRouter {
     return slideFadeRoute(page);
   }
 }
+
 
 
