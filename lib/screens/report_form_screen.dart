@@ -7,12 +7,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../data/firestore_collections.dart';
 import '../models/item_report.dart';
+import '../services/reverse_geocoding.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/map_preview.dart';
+import 'location_picker_screen.dart';
 
 /// Form laporan barang hilang/ditemukan.
 class ReportFormScreen extends StatefulWidget {
@@ -93,11 +97,18 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
         return;
       }
       final Position pos = await Geolocator.getCurrentPosition();
+      if (mounted) {
+        setState(() {
+          _latitude = pos.latitude;
+          _longitude = pos.longitude;
+        });
+      }
+      final String? place = await reverseGeocode(pos.latitude, pos.longitude);
+      if (!mounted) return;
       setState(() {
-        _latitude = pos.latitude;
-        _longitude = pos.longitude;
-        _locationController.text =
-            'Lat ${pos.latitude.toStringAsFixed(5)}, Lng ${pos.longitude.toStringAsFixed(5)}';
+        _locationController.text = place ??
+            'Lat ${pos.latitude.toStringAsFixed(5)}, '
+                'Lng ${pos.longitude.toStringAsFixed(5)}';
       });
     } catch (e) {
       if (mounted) {
@@ -106,6 +117,25 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
         );
       }
     }
+  }
+
+  Future<void> _openMapPicker() async {
+    final SelectedLocation? result = await Navigator.push<SelectedLocation>(
+      context,
+      MaterialPageRoute<SelectedLocation>(
+        builder: (_) => LocationPickerScreen(
+          initial: (_latitude != null && _longitude != null)
+              ? LatLng(_latitude!, _longitude!)
+              : null,
+        ),
+      ),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      _latitude = result.latitude;
+      _longitude = result.longitude;
+      _locationController.text = result.address;
+    });
   }
 
   void _addQuestion() {
@@ -392,6 +422,31 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                 validator: (String? v) =>
                     (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
               ),
+              const SizedBox(height: AppSpacing.s8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _openMapPicker,
+                  icon: const Icon(Icons.map_rounded, size: 18),
+                  label: const Text('Pilih Lokasi di Peta'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.borderBrand),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppRadius.mdAll,
+                    ),
+                  ),
+                ),
+              ),
+              if (_latitude != null && _longitude != null) ...[
+                const SizedBox(height: AppSpacing.s12),
+                MapPreview(
+                  key: ValueKey<String>('$_latitude,$_longitude'),
+                  latitude: _latitude!,
+                  longitude: _longitude!,
+                ),
+              ],
               const SizedBox(height: AppSpacing.s16),
               // Imbalan
               _fieldLabel('Imbalan (opsional)'),
