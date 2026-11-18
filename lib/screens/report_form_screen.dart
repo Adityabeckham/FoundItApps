@@ -43,6 +43,8 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
   final List<TextEditingController> _questionControllers =
       <TextEditingController>[TextEditingController()];
+  final List<TextEditingController> _answerControllers =
+      <TextEditingController>[TextEditingController()];
 
   static const List<String> _categories = <String>[
     'Dompet',
@@ -60,6 +62,9 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
     _locationController.dispose();
     _rewardController.dispose();
     for (final TextEditingController c in _questionControllers) {
+      c.dispose();
+    }
+    for (final TextEditingController c in _answerControllers) {
       c.dispose();
     }
     super.dispose();
@@ -140,7 +145,10 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
   void _addQuestion() {
     if (_questionControllers.length >= 3) return;
-    setState(() => _questionControllers.add(TextEditingController()));
+    setState(() {
+      _questionControllers.add(TextEditingController());
+      _answerControllers.add(TextEditingController());
+    });
   }
 
   void _removeQuestion(int index) {
@@ -148,6 +156,8 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
     setState(() {
       _questionControllers[index].dispose();
       _questionControllers.removeAt(index);
+      _answerControllers[index].dispose();
+      _answerControllers.removeAt(index);
     });
   }
 
@@ -177,9 +187,21 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
       return;
     }
     if (!_isLost) {
-      final bool hasQuestion = _questionControllers.any(
-        (TextEditingController c) => c.text.trim().isNotEmpty,
-      );
+      bool hasQuestion = false;
+      for (int i = 0; i < _questionControllers.length; i++) {
+        final bool questionFilled =
+            _questionControllers[i].text.trim().isNotEmpty;
+        final bool answerFilled = _answerControllers[i].text.trim().isNotEmpty;
+        if (questionFilled) hasQuestion = true;
+        if (questionFilled != answerFilled) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Isi pertanyaan beserta jawaban rahasianya.'),
+            ),
+          );
+          return;
+        }
+      }
       if (!hasQuestion) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -196,12 +218,16 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
       final DocumentReference<Map<String, dynamic>> docRef =
           FirebaseFirestore.instance.collection(FirestoreCollections.items).doc();
       final List<String> urls = await _uploadPhotos(docRef.id);
-      final List<String> questions = _isLost
-          ? const <String>[]
-          : _questionControllers
-              .map((TextEditingController c) => c.text.trim())
-              .where((String q) => q.isNotEmpty)
-              .toList();
+      final List<String> questions = <String>[];
+      final List<String> answers = <String>[];
+      if (!_isLost) {
+        for (int i = 0; i < _questionControllers.length; i++) {
+          final String q = _questionControllers[i].text.trim();
+          if (q.isEmpty) continue;
+          questions.add(q);
+          answers.add(_answerControllers[i].text.trim());
+        }
+      }
 
       await docRef.set(<String, dynamic>{
         'title': _titleController.text.trim(),
@@ -214,6 +240,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
         'category': _category,
         'status': ReportStatus.open,
         'secretQuestions': questions,
+        'secretAnswers': answers,
         'reward': _rewardController.text.trim().isEmpty
             ? null
             : _rewardController.text.trim(),
@@ -480,16 +507,29 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                 const SizedBox(height: AppSpacing.s8),
                 ...List<Widget>.generate(_questionControllers.length, (int i) {
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.s8),
+                    padding: const EdgeInsets.only(bottom: AppSpacing.s12),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: TextField(
-                            controller: _questionControllers[i],
-                            style: AppTextStyles.bodyM13,
-                            decoration: InputDecoration(
-                              hintText: 'Pertanyaan ${i + 1}',
-                            ),
+                          child: Column(
+                            children: [
+                              TextField(
+                                controller: _questionControllers[i],
+                                style: AppTextStyles.bodyM13,
+                                decoration: InputDecoration(
+                                  hintText: 'Pertanyaan ${i + 1}',
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.s8),
+                              TextField(
+                                controller: _answerControllers[i],
+                                style: AppTextStyles.bodyM13,
+                                decoration: InputDecoration(
+                                  hintText: 'Jawaban benar ${i + 1}',
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         if (_questionControllers.length > 1)
@@ -505,7 +545,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                   );
                 }),
                 Text(
-                  'Minimal 1 pertanyaan (maks. 3).',
+                  'Minimal 1 pertanyaan beserta jawabannya (maks. 3).',
                   style: AppTextStyles.caption10,
                 ),
               ],

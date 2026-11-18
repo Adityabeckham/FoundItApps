@@ -31,6 +31,7 @@ const List<ItemReport> dummyReports = [
     latitude: -6.9025,
     longitude: 107.6186,
     secretQuestions: <String>['Apa warna gantungan kunci?', 'Berapa jumlah kunci?'],
+    secretAnswers: <String>['Cokelat', '2'],
   ),
   ItemReport(
     id: 'item_03',
@@ -59,6 +60,7 @@ const List<ItemReport> dummyReports = [
     latitude: -6.8890,
     longitude: 107.5960,
     secretQuestions: <String>['Apa merk tas?', 'Warna tali tas?'],
+    secretAnswers: <String>['Eiger', 'Hitam'],
   ),
   ItemReport(
     id: 'item_05',
@@ -87,6 +89,7 @@ const List<ItemReport> dummyReports = [
     latitude: -6.9175,
     longitude: 107.6090,
     secretQuestions: <String>['Apa merk kacamata?'],
+    secretAnswers: <String>['Rayban'],
   ),
   ItemReport(
     id: 'item_07',
@@ -114,6 +117,7 @@ const List<ItemReport> dummyReports = [
     latitude: -6.9270,
     longitude: 107.6360,
     secretQuestions: <String>['Apa merk charger?', 'Warna kabel?'],
+    secretAnswers: <String>['Lenovo', 'Hitam'],
   ),
   ItemReport(
     id: 'item_09',
@@ -141,6 +145,8 @@ const List<ItemReport> dummyReports = [
     latitude: -6.9400,
     longitude: 107.6350,
     secretQuestions: <String>['Apa warna jam?', 'Ada goresan?'],
+    secretAnswers: <String>['Hitam', 'Tidak'],
   ),
 ];
+
 

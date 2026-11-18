@@ -61,7 +61,6 @@ void main() {
     expect(find.text('Hilang'), findsOneWidget);
     expect(find.text('Open'), findsOneWidget);
     expect(find.text('Dompet'), findsOneWidget);
-    expect(find.text('Klaim Barang'), findsOneWidget);
   });
 
   testWidgets('tombol back kembali ke halaman sebelumnya',

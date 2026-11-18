@@ -23,6 +23,7 @@
 | category | string | Kategori |
 | status | string | Open / Waiting for Owner / Approved / Resolved |
 | secretQuestions | array<string> | Pertanyaan rahasia (1-3, untuk Found) |
+| secretAnswers | array<string> | Kunci jawaban pertanyaan rahasia (untuk verifikasi klaim) |
 | reward | string? | Imbalan |
 | timeAgo | string | Waktu relatif (display) |
 | createdAt | timestamp | Waktu dibuat |
@@ -31,14 +32,17 @@
 ### `claims`
 | Field | Tipe | Keterangan |
 |---|---|---|
-| id | string | ID klaim (auto-ID) |
+| id | string | ID klaim (`{itemId}_{claimerUid}`, unik per akun per laporan) |
 | itemId | string | Referensi item |
 | claimerUid | string | UID pengklaim |
+| ownerUid | string? | UID penemu/pemilik laporan |
 | answers | array<string> | Jawaban pertanyaan rahasia |
 | attempts | number | Jumlah percobaan (max 3) |
 | status | string | Pending / Approved / Rejected |
+| rejectionReason | string? | Alasan penolakan (`Limit Exceeded`) |
 | proofUrl | string? | Bukti serah terima |
-| createdAt | timestamp | Waktu klaim |
+| createdAt | timestamp | Waktu klaim pertama |
+| updatedAt | timestamp | Waktu update terakhir |
 
 ### `chats/{chatId}/messages`
 | Field | Tipe | Keterangan |
