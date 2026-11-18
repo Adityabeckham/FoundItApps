@@ -138,6 +138,10 @@ class ItemProvider extends ChangeNotifier {
               ?.map((e) => e.toString())
               .toList() ??
           const <String>[],
+      secretAnswers: (d['secretAnswers'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const <String>[],
       latitude: (d['latitude'] as num?)?.toDouble(),
       longitude: (d['longitude'] as num?)?.toDouble(),
       reward: d['reward'] as String?,

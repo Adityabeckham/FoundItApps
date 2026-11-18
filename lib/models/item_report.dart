@@ -30,6 +30,7 @@ class ItemReport {
     this.description,
     this.status = ReportStatus.open,
     this.secretQuestions = const <String>[],
+    this.secretAnswers = const <String>[],
     this.latitude,
     this.longitude,
     this.reward,
@@ -48,6 +49,7 @@ class ItemReport {
   final String? description;
   final String status;
   final List<String> secretQuestions;
+  final List<String> secretAnswers;
   final double? latitude;
   final double? longitude;
   final String? reward;
@@ -79,6 +81,7 @@ class Claim {
     this.answers = const <String>[],
     this.attempts = 0,
     this.status = ClaimStatus.pending,
+    this.rejectionReason,
     this.proofUrl,
     this.createdAt,
   });
@@ -89,10 +92,12 @@ class Claim {
   final List<String> answers;
   final int attempts;
   final String status;
+  final String? rejectionReason;
   final String? proofUrl;
   final DateTime? createdAt;
 
   bool get isLocked => attempts >= 3 && status != ClaimStatus.approved;
+  int get remainingAttempts => (3 - attempts).clamp(0, 3);
 }
 
 /// Pesan chat privat antar pengguna setelah klaim disetujui.

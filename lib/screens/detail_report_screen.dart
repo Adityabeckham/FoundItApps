@@ -1,11 +1,15 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import '../models/item_report.dart';
+import '../services/claim_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/state_views.dart';
+import 'claim_screen.dart';
 
 /// Halaman Detail Laporan Barang.
 class DetailReportScreen extends StatelessWidget {
@@ -209,46 +213,7 @@ class DetailReportScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.s20,
-                AppSpacing.s12,
-                AppSpacing.s20,
-                AppSpacing.s20,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.bgSurface,
-                boxShadow: AppShadows.barUp,
-              ),
-              child: SafeArea(
-                top: false,
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _onClaimPressed(context, item),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.bgInverse,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                    icon: const Icon(
-                      Icons.verified_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    label: Text(
-                      'Klaim Barang',
-                      style: AppTextStyles.labelXl15.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            if (_canClaim(item)) _buildClaimBar(context, item),
           ],
         ),
       ),
@@ -293,11 +258,119 @@ class DetailReportScreen extends StatelessWidget {
     );
   }
 
-  void _onClaimPressed(BuildContext context, ItemReport item) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Fitur klaim akan segera tersedia.'),
-      ),
+  bool _canClaim(ItemReport item) {
+    String? uid;
+    try {
+      uid = FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      uid = null;
+    }
+    return item.id != null &&
+        uid != null &&
+        !item.isLost &&
+        item.createdBy != uid &&
+        item.status != ReportStatus.resolved;
+  }
+
+  Widget _buildClaimBar(BuildContext context, ItemReport item) {
+    final String uid = FirebaseAuth.instance.currentUser!.uid;
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: ClaimService.claimStream(item.id!, uid),
+      builder: (BuildContext context,
+          AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
+        final Map<String, dynamic>? data = snapshot.data?.data();
+        final int attempts = (data?['attempts'] as num?)?.toInt() ?? 0;
+        final String status =
+            (data?['status'] as String?) ?? ClaimStatus.pending;
+        final bool approved = status == ClaimStatus.approved;
+        final bool locked = attempts >= ClaimService.maxAttempts && !approved;
+
+        final String label;
+        if (approved) {
+          label = 'Buka Chat';
+        } else if (locked) {
+          label = 'Klaim Terkunci (Limit Exceeded)';
+        } else {
+          label = 'Klaim Barang';
+        }
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.s20,
+            AppSpacing.s12,
+            AppSpacing.s20,
+            AppSpacing.s20,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            boxShadow: AppShadows.barUp,
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!approved && !locked)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.s8),
+                    child: Text(
+                      'Sisa ${ClaimService.maxAttempts - attempts} dari '
+                      '${ClaimService.maxAttempts} percobaan klaim.',
+                      style: AppTextStyles.caption10.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: locked
+                        ? null
+                        : () {
+                            if (approved) {
+                              Navigator.pushNamed(context, '/chat');
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (_) => ClaimScreen(item: item),
+                                ),
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: approved
+                          ? AppColors.success
+                          : AppColors.bgInverse,
+                      disabledBackgroundColor: AppColors.bgSubtle,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    icon: Icon(
+                      approved
+                          ? Icons.chat_bubble_rounded
+                          : locked
+                              ? Icons.lock_rounded
+                              : Icons.verified_rounded,
+                      color: locked ? AppColors.textMuted : Colors.white,
+                      size: 20,
+                    ),
+                    label: Text(
+                      label,
+                      style: AppTextStyles.labelXl15.copyWith(
+                        color: locked ? AppColors.textMuted : Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
