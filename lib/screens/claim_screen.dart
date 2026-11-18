@@ -9,6 +9,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/state_views.dart';
+import 'chat_room_screen.dart';
 
 /// Halaman klaim barang dengan verifikasi pertanyaan rahasia (maks. 3x).
 class ClaimScreen extends StatefulWidget {
@@ -117,7 +118,8 @@ class _ClaimScreenState extends State<ClaimScreen> {
       setState(() => _claim = claim);
 
       if (claim.status == ClaimStatus.approved) {
-        _snack('Klaim disetujui. Kamu bisa membuka chat dengan pemilik.');
+        _snack('Klaim disetujui. Membuka chat dengan pemilik...');
+        await _openChat();
       } else if (claim.status == ClaimStatus.rejected) {
         _snack('Klaim ditolak: Limit Exceeded.');
       } else {
@@ -181,6 +183,22 @@ class _ClaimScreenState extends State<ClaimScreen> {
     } finally {
       if (mounted) setState(() => _resolving = false);
     }
+  }
+
+  Future<void> _openChat() async {
+    if (widget.item.id == null || _uid.isEmpty) return;
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => ChatRoomScreen(
+          itemId: widget.item.id!,
+          itemTitle: widget.item.title,
+          ownerUid: widget.item.createdBy ?? 'penemu',
+          claimerUid: _uid,
+        ),
+      ),
+    );
   }
 
   void _snack(String message) {
@@ -371,7 +389,7 @@ class _ClaimScreenState extends State<ClaimScreen> {
           width: double.infinity,
           height: 50,
           child: ElevatedButton.icon(
-            onPressed: () => Navigator.pushNamed(context, '/chat'),
+            onPressed: _openChat,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               shape: RoundedRectangleBorder(

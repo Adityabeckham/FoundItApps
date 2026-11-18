@@ -9,6 +9,7 @@ import '../theme/app_shadows.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/state_views.dart';
+import 'chat_room_screen.dart';
 import 'claim_screen.dart';
 
 /// Halaman Detail Laporan Barang.
@@ -330,7 +331,17 @@ class DetailReportScreen extends StatelessWidget {
                         ? null
                         : () {
                             if (approved) {
-                              Navigator.pushNamed(context, '/chat');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (_) => ChatRoomScreen(
+                                    itemId: item.id!,
+                                    itemTitle: item.title,
+                                    ownerUid: item.createdBy ?? 'penemu',
+                                    claimerUid: uid,
+                                  ),
+                                ),
+                              );
                             } else {
                               Navigator.push(
                                 context,

@@ -44,6 +44,19 @@
 | createdAt | timestamp | Waktu klaim pertama |
 | updatedAt | timestamp | Waktu update terakhir |
 
+### `chats`
+| Field | Tipe | Keterangan |
+|---|---|---|
+| id | string | ID chat (`{itemId}_{claimerUid}`) |
+| itemId | string | Referensi laporan |
+| itemTitle | string | Judul laporan (untuk daftar chat) |
+| ownerUid | string | UID pemilik/penemu laporan |
+| claimerUid | string | UID pengklaim (approved) |
+| participants | array<string> | [ownerUid, claimerUid] untuk query arrayContains |
+| lastMessage | string | Ringkasan pesan terakhir |
+| lastSenderUid | string? | Pengirim pesan terakhir |
+| updatedAt | timestamp | Update terakhir (urut daftar chat) |
+
 ### `chats/{chatId}/messages`
 | Field | Tipe | Keterangan |
 |---|---|---|
