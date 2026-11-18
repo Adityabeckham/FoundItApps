@@ -1,13 +1,23 @@
+﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../data/dummy_reports.dart';
+import '../data/firestore_collections.dart';
 import '../models/item_report.dart';
+import '../theme/app_colors.dart';
 
-/// State katalog laporan barang (Provider).
+/// State katalog laporan barang (Provider + Firestore stream).
 class ItemProvider extends ChangeNotifier {
   final List<ItemReport> _items = List<ItemReport>.of(dummyReports);
   String _query = '';
   int _filterIndex = 0;
+
+  ItemProvider() {
+    if (Firebase.apps.isNotEmpty) {
+      listenToFirestore();
+    }
+  }
 
   List<ItemReport> get items => List<ItemReport>.unmodifiable(_items);
   String get query => _query;
@@ -58,5 +68,50 @@ class ItemProvider extends ChangeNotifier {
   void addItem(ItemReport report) {
     _items.insert(0, report);
     notifyListeners();
+  }
+
+  /// Dengarkan stream Firestore `items`. Fallback ke dummy jika kosong/error.
+  void listenToFirestore() {
+    FirebaseFirestore.instance
+        .collection(FirestoreCollections.items)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen(
+      (snapshot) {
+        if (snapshot.docs.isEmpty) return;
+        _items
+          ..clear()
+          ..addAll(snapshot.docs.map(_fromDoc));
+        notifyListeners();
+      },
+      onError: (_) {
+        // Pertahankan dummy data jika Firestore gagal.
+      },
+    );
+  }
+
+  static ItemReport _fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final Map<String, dynamic> d = doc.data() ?? <String, dynamic>{};
+    return ItemReport(
+      id: doc.id,
+      title: (d['title'] as String?) ?? 'Tanpa judul',
+      location: (d['location'] as String?) ?? '-',
+      timeAgo: (d['timeAgo'] as String?) ?? '',
+      imageAsset: (d['imageAsset'] as String?) ??
+          (d['imageUrl'] as String?) ??
+          'assets/images/icon-apps.png',
+      isLost: (d['isLost'] as bool?) ?? true,
+      thumbBackground: AppColors.categoryBlueBg,
+      category: (d['category'] as String?) ?? 'Lainnya',
+      status: (d['status'] as String?) ?? ReportStatus.open,
+      secretQuestions: (d['secretQuestions'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const <String>[],
+      latitude: (d['latitude'] as num?)?.toDouble(),
+      longitude: (d['longitude'] as num?)?.toDouble(),
+      reward: d['reward'] as String?,
+      createdBy: d['createdBy'] as String?,
+    );
   }
 }

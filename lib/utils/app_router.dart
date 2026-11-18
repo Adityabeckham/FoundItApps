@@ -1,8 +1,10 @@
 ﻿import 'package:flutter/material.dart';
 
 import '../screens/dashboard_screen.dart';
+import '../screens/detail_report_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/profile_screen.dart';
+import '../models/item_report.dart';
 import '../screens/onboarding1_screen.dart';
 import '../screens/onboarding2_screen.dart';
 import '../utils/app_transitions.dart';
@@ -26,6 +28,11 @@ class AppRouter {
       case '/profile':
         page = const ProfileScreen();
         break;
+      case '/detail':
+        page = DetailReportScreen(
+          report: settings.arguments as ItemReport?,
+        );
+        break;
       case '/':
       default:
         page = const Onboarding1Screen();
@@ -33,4 +40,5 @@ class AppRouter {
     return slideFadeRoute(page);
   }
 }
+
 
