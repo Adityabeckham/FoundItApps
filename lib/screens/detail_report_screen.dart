@@ -66,17 +66,7 @@ class DetailReportScreen extends StatelessWidget {
                     child: Container(
                       height: 220,
                       color: item.thumbBackground,
-                      child: Image.asset(
-                        item.imageAsset,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stack) => const Center(
-                          child: Icon(
-                            Icons.image_not_supported_rounded,
-                            size: 48,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ),
+                      child: _reportImage(item),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.s16),
@@ -122,7 +112,7 @@ class DetailReportScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Ciri khusus', style: AppTextStyles.titleM14),
+                        Text('Deskripsi Barang', style: AppTextStyles.titleM14),
                         const SizedBox(height: AppSpacing.s6),
                         Text(
                           item.description ??
@@ -212,7 +202,7 @@ class DetailReportScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () => _onClaimPressed(context, item),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.bgInverse,
                       shape: RoundedRectangleBorder(
@@ -236,6 +226,52 @@ class DetailReportScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _reportImage(ItemReport item) {
+    final String src = item.imageAsset;
+    final bool isNetwork =
+        src.startsWith('http://') || src.startsWith('https://');
+    if (isNetwork) {
+      return Image.network(
+        src,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return const Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stack) => _imageError(),
+      );
+    }
+    return Image.asset(
+      src,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stack) => _imageError(),
+    );
+  }
+
+  Widget _imageError() {
+    return const Center(
+      child: Icon(
+        Icons.image_not_supported_rounded,
+        size: 48,
+        color: AppColors.textMuted,
+      ),
+    );
+  }
+
+  void _onClaimPressed(BuildContext context, ItemReport item) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Fitur klaim akan segera tersedia.'),
       ),
     );
   }
