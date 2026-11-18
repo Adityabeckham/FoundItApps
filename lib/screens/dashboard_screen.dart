@@ -104,7 +104,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         padding: const EdgeInsets.only(bottom: AppSpacing.s12),
                         child: ReportCard(
                           report: report,
-                          onTap: () {},
+                          onTap: () => Navigator.pushNamed(
+                            context, '/detail', arguments: report),
                         ),
                       ),
                     ),
@@ -278,6 +279,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+
 
 
 
