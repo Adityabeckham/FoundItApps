@@ -95,6 +95,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             AppBottomNav(
               selectedIndex: _navIndex,
               onTap: (index) {
+                if (index == 1) {
+                  Navigator.pushNamed(context, '/map');
+                  return;
+                }
                 if (index == 2) {
                   Navigator.pushNamed(context, '/report');
                   return;
