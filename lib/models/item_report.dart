@@ -27,6 +27,7 @@ class ItemReport {
     required this.isLost,
     required this.thumbBackground,
     required this.category,
+    this.description,
     this.status = ReportStatus.open,
     this.secretQuestions = const <String>[],
     this.latitude,
@@ -44,6 +45,7 @@ class ItemReport {
   final bool isLost;
   final Color thumbBackground;
   final String category;
+  final String? description;
   final String status;
   final List<String> secretQuestions;
   final double? latitude;

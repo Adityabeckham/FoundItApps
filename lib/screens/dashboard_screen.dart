@@ -24,8 +24,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Hilang',
     'Ditemukan',
     'Dompet',
-    'Elektronik',
     'Kunci',
+    'Elektronik',
+    'Tas',
+    'Aksesoris',
+    'Lainnya',
   ];
 
   int _navIndex = 0;
@@ -236,9 +239,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildFilterChip(int index, ItemProvider itemProvider) {
-    final bool selected = itemProvider.filterIndex == index;
+    final bool selected = itemProvider.filter == _filters[index];
     return GestureDetector(
-      onTap: () => itemProvider.setFilter(index),
+          onTap: () => itemProvider.setFilter(_filters[index]),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
