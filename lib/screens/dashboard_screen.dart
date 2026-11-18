@@ -9,6 +9,7 @@ import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/report_card.dart';
+import '../widgets/state_views.dart';
 
 /// Halaman Beranda (Dashboard Katalog) setelah pengguna login.
 class DashboardScreen extends StatefulWidget {
@@ -32,12 +33,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   int _navIndex = 0;
+  String? _shownError;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final ItemProvider itemProvider = context.watch<ItemProvider>();
     final AuthProvider authProvider = context.watch<AuthProvider>();
     final List<ItemReport> reports = itemProvider.filteredItems;
+
+    _maybeShowError(context, itemProvider.error);
 
     return Scaffold(
       backgroundColor: AppColors.bgScreen,
@@ -79,47 +90,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.s20,
-                  AppSpacing.s20,
-                  AppSpacing.s20,
-                  AppSpacing.s8,
-                ),
-                children: [
-                  _buildSectionHeader(),
-                  const SizedBox(height: AppSpacing.s12),
-                  if (reports.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: Center(
-                        child: Text(
-                          'Belum ada laporan',
-                          style: AppTextStyles.bodyM13.copyWith(
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    ...reports.map(
-                      (report) => Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.s12),
-                        child: ReportCard(
-                          report: report,
-                          onTap: () => Navigator.pushNamed(
-                            context, '/detail', arguments: report),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+              child: _buildContent(context, itemProvider, reports),
             ),
             AppBottomNav(
               selectedIndex: _navIndex,
               onTap: (index) {
                 if (index == 2) {
                   Navigator.pushNamed(context, '/report');
+                  return;
+                }
+                if (index == 3) {
+                  Navigator.pushNamed(context, '/chat');
                   return;
                 }
                 if (index == 4) {
@@ -132,6 +113,100 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _maybeShowError(BuildContext context, String? error) {
+    if (error == null || error == _shownError) return;
+    _shownError = error;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: AppColors.error,
+          action: SnackBarAction(
+            label: 'Coba Lagi',
+            textColor: AppColors.textOnBrand,
+            onPressed: () => context.read<ItemProvider>().retry(),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    ItemProvider itemProvider,
+    List<ItemReport> reports,
+  ) {
+    if (itemProvider.isLoading && reports.isEmpty) {
+      return const LoadingStateView(message: 'Memuat laporan...');
+    }
+    if (itemProvider.error != null && reports.isEmpty) {
+      return ErrorStateView(
+        message: itemProvider.error!,
+        onRetry: itemProvider.retry,
+      );
+    }
+
+    final bool hasActiveFilter =
+        itemProvider.query.trim().isNotEmpty || itemProvider.filter != 'Semua';
+
+    return Column(
+      children: [
+        if (itemProvider.isLoading)
+          const LinearProgressIndicator(
+            minHeight: 2,
+            color: AppColors.primary,
+            backgroundColor: AppColors.bgAccentSoft,
+          ),
+        Expanded(
+          child: reports.isEmpty
+              ? EmptyStateView(
+                  icon: hasActiveFilter
+                      ? Icons.search_off_rounded
+                      : Icons.inbox_rounded,
+                  title: hasActiveFilter
+                      ? 'Laporan tidak ditemukan'
+                      : 'Belum ada laporan',
+                  message: hasActiveFilter
+                      ? 'Coba ubah kata kunci atau filter kategori.'
+                      : 'Belum ada laporan barang. Jadilah yang pertama '
+                          'melaporkan.',
+                  actionLabel: hasActiveFilter ? 'Reset Filter' : null,
+                  onAction: hasActiveFilter
+                      ? () {
+                          _searchController.clear();
+                          itemProvider.setQuery('');
+                          itemProvider.setFilter('Semua');
+                        }
+                      : null,
+                )
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.s20,
+                    AppSpacing.s20,
+                    AppSpacing.s20,
+                    AppSpacing.s8,
+                  ),
+                  children: [
+                    _buildSectionHeader(),
+                    const SizedBox(height: AppSpacing.s12),
+                    ...reports.map(
+                      (report) => Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.s12),
+                        child: ReportCard(
+                          report: report,
+                          onTap: () => Navigator.pushNamed(
+                            context, '/detail', arguments: report),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ],
     );
   }
 
@@ -157,18 +232,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
         ),
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: AppColors.bgSurface,
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.border),
-          ),
-          child: const Icon(
-            Icons.notifications_none_rounded,
-            size: 20,
-            color: AppColors.textSecondary,
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '/notifications'),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.bgSurface,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.border),
+            ),
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              size: 20,
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
       ],
@@ -197,6 +275,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: AppSpacing.s10),
                 Expanded(
                   child: TextField(
+                    controller: _searchController,
                     onChanged: itemProvider.setQuery,
                     style: AppTextStyles.bodyM13,
                     decoration: InputDecoration(
