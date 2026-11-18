@@ -1,4 +1,6 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+﻿import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -12,6 +14,9 @@ class ItemProvider extends ChangeNotifier {
   final List<ItemReport> _items = List<ItemReport>.of(dummyReports);
   String _query = '';
   String _filter = 'Semua';
+  bool _isLoading = false;
+  String? _error;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _subscription;
 
   ItemProvider() {
     if (Firebase.apps.isNotEmpty) {
@@ -22,6 +27,8 @@ class ItemProvider extends ChangeNotifier {
   List<ItemReport> get items => List<ItemReport>.unmodifiable(_items);
   String get query => _query;
   String get filter => _filter;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   List<ItemReport> get filteredItems {
     Iterable<ItemReport> result = _items;
@@ -67,22 +74,49 @@ class ItemProvider extends ChangeNotifier {
 
   /// Dengarkan stream Firestore `items`. Fallback ke dummy jika kosong/error.
   void listenToFirestore() {
-    FirebaseFirestore.instance
+    _subscription?.cancel();
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    _subscription = FirebaseFirestore.instance
         .collection(FirestoreCollections.items)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .listen(
       (snapshot) {
-        if (snapshot.docs.isEmpty) return;
-        _items
-          ..clear()
-          ..addAll(snapshot.docs.map(_fromDoc));
+        _isLoading = false;
+        _error = null;
+        if (snapshot.docs.isNotEmpty) {
+          _items
+            ..clear()
+            ..addAll(snapshot.docs.map(_fromDoc));
+        }
         notifyListeners();
       },
-      onError: (_) {
-        // Pertahankan dummy data jika Firestore gagal.
+      onError: (Object _) {
+        _isLoading = false;
+        _error =
+            'Tidak dapat memuat data. Periksa koneksi internet Anda lalu coba lagi.';
+        notifyListeners();
       },
     );
+  }
+
+  /// Coba muat ulang data dari Firestore.
+  void retry() {
+    if (Firebase.apps.isEmpty) {
+      _error = null;
+      notifyListeners();
+      return;
+    }
+    listenToFirestore();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   static ItemReport _fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
