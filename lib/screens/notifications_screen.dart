@@ -59,6 +59,42 @@ class NotificationsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.s20),
+          Text('Notifikasi Terbaru', style: AppTextStyles.titleM14),
+          const SizedBox(height: AppSpacing.s12),
+          _sampleTile(
+            context,
+            itemId: 'item_04',
+            title: 'Barang temuan cocok!',
+            message: 'Tas Ransel Hitam di Paris Van Java cocok dengan laporan '
+                'Dompet Kulit Cokelat.',
+            time: 'Baru saja',
+            icon: Icons.search_rounded,
+            color: AppColors.error,
+            background: AppColors.errorBg,
+          ),
+          const SizedBox(height: AppSpacing.s12),
+          _sampleTile(
+            context,
+            itemId: 'item_02',
+            title: 'Klaim baru',
+            message: 'Ada klaim baru untuk laporan Kunci Motor Honda.',
+            time: '10 menit lalu',
+            icon: Icons.verified_rounded,
+            color: AppColors.success,
+            background: AppColors.successBg,
+          ),
+          const SizedBox(height: AppSpacing.s12),
+          _sampleTile(
+            context,
+            itemId: 'item_05',
+            title: 'Barang temuan cocok!',
+            message: 'Case AirPods di Dago mungkin barang yang kamu cari.',
+            time: '1 jam lalu',
+            icon: Icons.search_rounded,
+            color: AppColors.error,
+            background: AppColors.errorBg,
+          ),
+          const SizedBox(height: AppSpacing.s20),
           Text('Simulasikan Notifikasi', style: AppTextStyles.titleM14),
           const SizedBox(height: AppSpacing.s4),
           Text(
@@ -96,6 +132,78 @@ class NotificationsScreen extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _sampleTile(
+    BuildContext context, {
+    required String itemId,
+    required String title,
+    required String message,
+    required String time,
+    required IconData icon,
+    required Color color,
+    required Color background,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        final ItemReport item = dummyReports.firstWhere(
+          (ItemReport r) => r.id == itemId,
+          orElse: () => dummyReports.first,
+        );
+        Navigator.pushNamed(context, '/detail', arguments: item);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.s12),
+        decoration: BoxDecoration(
+          color: AppColors.bgSurface,
+          borderRadius: AppRadius.lgAll,
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: background,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: AppSpacing.s12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(title, style: AppTextStyles.titleM14),
+                      ),
+                      Text(
+                        time,
+                        style: AppTextStyles.caption10.copyWith(
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    message,
+                    style: AppTextStyles.bodyS12.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
