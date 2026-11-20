@@ -1,0 +1,145 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ---------- users/{uid} ----------
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isSelf(uid);
+      allow delete: if false;
+    }
+
+    // ---------- items/{itemId} ----------
+    match /items/{itemId} {
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.location is string
+        && request.resource.data.isLost is bool
+        && request.resource.data.category is string;
+
+      allow update: if signedIn() && (
+        resource.data.createdBy == request.auth.uid
+        || (
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'updatedAt'])
+          && get(
+            /databases/$(database)/documents/claims/$(itemId + '_' + request.auth.uid)
+          ).data.status == 'Approved'
+        )
+      );
+
+      allow delete: if signedIn() && resource.data.createdBy == request.auth.uid;
+    }
+
+    // ---------- claims/{claimId} ----------
+    // claimId = "{itemId}_{claimerUid}".
+    match /claims/{claimId} {
+      allow read: if signedIn() && (
+        resource == null
+        || resource.data.claimerUid == request.auth.uid
+        || resource.data.ownerUid == request.auth.uid
+      );
+
+      allow create: if signedIn()
+        && request.resource.data.claimerUid == request.auth.uid
+        && request.resource.data.itemId is string
+        && claimId == request.resource.data.itemId + '_' + request.auth.uid
+        && request.resource.data.attempts is int
+        && request.resource.data.attempts == 1
+        && request.resource.data.status in ['Pending', 'Approved', 'Rejected'];
+
+      allow update: if signedIn()
+        && resource.data.claimerUid == request.auth.uid
+        && request.resource.data.claimerUid == resource.data.claimerUid
+        && request.resource.data.itemId == resource.data.itemId
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && (
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['proofUrl', 'updatedAt'])
+          || (
+            request.resource.data.attempts is int
+            && request.resource.data.attempts == resource.data.attempts + 1
+            && request.resource.data.attempts <= 3
+            && request.resource.data.status in ['Pending', 'Approved', 'Rejected']
+          )
+        );
+
+      allow delete: if false;
+    }
+
+    // ---------- chats/{chatId} ----------
+    // chatId = "{itemId}_{claimerUid}" (found) atau "{itemId}_{finderUid}" (lost).
+    match /chats/{chatId} {
+      function isParticipant(data) {
+        return signedIn() && request.auth.uid in data.participants;
+      }
+
+      allow read: if resource == null || isParticipant(resource.data);
+
+      // Ruang chat boleh dibuat bila: klaim terkait Approved, ATAU laporan adalah
+      // lost (termasuk seed item yang tidak ada di Firestore), ATAU item doc
+      // tidak ada (demo/seed).
+      allow create: if signedIn()
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.participants.size() == 2
+        && (
+          !exists(/databases/$(database)/documents/items/$(request.resource.data.itemId))
+          || get(/databases/$(database)/documents/items/$(request.resource.data.itemId)).data.isLost == true
+          || (
+            exists(/databases/$(database)/documents/claims/$(chatId))
+            && get(/databases/$(database)/documents/claims/$(chatId)).data.status == 'Approved'
+          )
+        );
+
+      allow update: if isParticipant(resource.data)
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['lastMessage', 'lastSenderUid', 'updatedAt']);
+
+      allow delete: if false;
+
+      // ---------- chats/{chatId}/messages/{messageId} ----------
+      match /messages/{messageId} {
+        allow read: if signedIn()
+          && exists(/databases/$(database)/documents/chats/$(chatId))
+          && request.auth.uid in get(
+            /databases/$(database)/documents/chats/$(chatId)
+          ).data.participants;
+
+        allow create: if signedIn()
+          && exists(/databases/$(database)/documents/chats/$(chatId))
+          && request.auth.uid in get(
+            /databases/$(database)/documents/chats/$(chatId)
+          ).data.participants
+          && request.resource.data.senderUid == request.auth.uid
+          && (
+            (request.resource.data.text is string
+              && request.resource.data.text.size() > 0
+              && request.resource.data.text.size() <= 2000)
+            || (request.resource.data.imageUrl is string
+              && request.resource.data.imageUrl.size() > 0)
+          );
+
+        allow update, delete: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

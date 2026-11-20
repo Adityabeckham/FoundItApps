@@ -1,7 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_text_styles.dart';
 
 /// Badge status laporan: Hilang (merah) atau Ditemukan (hijau).
 class StatusBadge extends StatelessWidget {

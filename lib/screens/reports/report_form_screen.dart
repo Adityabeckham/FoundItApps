@@ -1,22 +1,23 @@
-﻿import 'dart:io';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../data/firestore_collections.dart';
-import '../models/item_report.dart';
-import '../services/reverse_geocoding.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/map_preview.dart';
-import 'location_picker_screen.dart';
+import 'package:foundit/data/firestore_collections.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/services/image_upload_service.dart';
+import 'package:foundit/services/reverse_geocoding.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/widgets/top_banner.dart';
+import 'package:foundit/theme/app_spacing.dart';
+import 'package:foundit/theme/app_text_styles.dart';
+import 'package:foundit/utils/app_transitions.dart';
+import 'package:foundit/widgets/map_preview.dart';
+import 'package:foundit/screens/reports/location_picker_screen.dart';
 
 /// Form laporan barang hilang/ditemukan.
 class ReportFormScreen extends StatefulWidget {
@@ -72,9 +73,8 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
   Future<void> _pickPhotos() async {
     if (_photos.length >= 3) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maksimal 3 foto.')),
-      );
+      TopBanner.info(context, 'Maksimal 3 foto',
+          message: 'Hapus salah satu foto untuk menambah yang baru.');
       return;
     }
     final List<XFile> picked = await _picker.pickMultiImage(imageQuality: 80);
@@ -95,9 +95,8 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Izin lokasi ditolak.')),
-          );
+          TopBanner.error(context, 'Izin lokasi ditolak',
+              message: 'Aktifkan izin lokasi untuk memakai fitur ini.');
         }
         return;
       }
@@ -125,14 +124,12 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
   }
 
   Future<void> _openMapPicker() async {
-    final SelectedLocation? result = await Navigator.push<SelectedLocation>(
+    final SelectedLocation? result = await pushSlide<SelectedLocation>(
       context,
-      MaterialPageRoute<SelectedLocation>(
-        builder: (_) => LocationPickerScreen(
-          initial: (_latitude != null && _longitude != null)
-              ? LatLng(_latitude!, _longitude!)
-              : null,
-        ),
+      LocationPickerScreen(
+        initial: (_latitude != null && _longitude != null)
+            ? LatLng(_latitude!, _longitude!)
+            : null,
       ),
     );
     if (result == null || !mounted) return;
@@ -163,17 +160,8 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
   Future<List<String>> _uploadPhotos(String itemId) async {
     final List<String> urls = <String>[];
-    for (int i = 0; i < _photos.length; i++) {
-      final Reference ref = FirebaseStorage.instance
-          .ref()
-          .child('items/$itemId/photo_$i.jpg');
-      if (kIsWeb) {
-        final bytes = await _photos[i].readAsBytes();
-        await ref.putData(bytes, SettableMetadata(contentType: 'image/jpeg'));
-      } else {
-        await ref.putFile(File(_photos[i].path));
-      }
-      urls.add(await ref.getDownloadURL());
+    for (final XFile photo in _photos) {
+      urls.add(await ImageUploadService.upload(photo));
     }
     return urls;
   }
@@ -181,9 +169,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_photos.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unggah minimal 1 foto barang.')),
-      );
+      TopBanner.error(context, 'Foto wajib', message: 'Unggah minimal 1 foto barang.');
       return;
     }
     if (!_isLost) {
@@ -194,19 +180,19 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
         final bool answerFilled = _answerControllers[i].text.trim().isNotEmpty;
         if (questionFilled) hasQuestion = true;
         if (questionFilled != answerFilled) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Isi pertanyaan beserta jawaban rahasianya.'),
-            ),
+          TopBanner.error(
+            context,
+            'Pertanyaan tidak lengkap',
+            message: 'Isi pertanyaan beserta jawaban rahasianya.',
           );
           return;
         }
       }
       if (!hasQuestion) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Buat minimal 1 pertanyaan rahasia.'),
-          ),
+        TopBanner.error(
+          context,
+          'Pertanyaan wajib',
+          message: 'Buat minimal 1 pertanyaan rahasia.',
         );
         return;
       }
@@ -251,15 +237,12 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
       });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Laporan berhasil disimpan.')),
-      );
+      TopBanner.success(context, 'Laporan tersimpan',
+          message: 'Laporan berhasil disimpan.');
       Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menyimpan: $e')),
-        );
+        TopBanner.error(context, 'Gagal menyimpan', message: '$e');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

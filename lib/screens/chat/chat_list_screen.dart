@@ -3,12 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../services/chat_service.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/state_views.dart';
-import 'chat_room_screen.dart';
+import 'package:foundit/services/chat_service.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/utils/app_transitions.dart';
+import 'package:foundit/theme/app_spacing.dart';
+import 'package:foundit/theme/app_text_styles.dart';
+import 'package:foundit/widgets/state_views.dart';
+import 'package:foundit/screens/chat/chat_room_screen.dart';
 
 /// Halaman daftar chat privat FoundIt.
 class ChatListScreen extends StatelessWidget {
@@ -99,15 +100,13 @@ class ChatListScreen extends StatelessWidget {
         : DateFormat('HH:mm').format(updatedAt.toDate().toLocal());
 
     return GestureDetector(
-      onTap: () => Navigator.push(
+      onTap: () => pushSlide(
         context,
-        MaterialPageRoute<void>(
-          builder: (_) => ChatRoomScreen(
-            itemId: itemId,
-            itemTitle: itemTitle,
-            ownerUid: ownerUid,
-            claimerUid: claimerUid,
-          ),
+        ChatRoomScreen(
+          itemId: itemId,
+          itemTitle: itemTitle,
+          ownerUid: ownerUid,
+          claimerUid: claimerUid,
         ),
       ),
       child: Container(

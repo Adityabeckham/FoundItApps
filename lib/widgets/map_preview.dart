@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_spacing.dart';
 
 /// Preview peta kecil yang menampilkan satu titik lokasi terpilih.
 class MapPreview extends StatelessWidget {

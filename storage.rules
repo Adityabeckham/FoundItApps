@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function under10MB() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+
+    function writeOk() {
+      return signedIn() && isImage() && under10MB();
+    }
+
+    // Foto profil: profile_photos/{uid}.jpg — hanya pemilik uid.
+    match /profile_photos/{fileName} {
+      allow read: if signedIn();
+      allow write: if writeOk()
+        && fileName == request.auth.uid + '.jpg';
+    }
+
+    // Foto laporan: items/{itemId}/photo_{i}.jpg — wajib login + gambar.
+    match /items/{itemId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if writeOk();
+    }
+
+    // Bukti serah terima klaim: claims/{itemId}_{uid}/proof.jpg.
+    match /claims/{claimId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if writeOk();
+    }
+
+    // Tolak akses lain secara default.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:foundit/screens/detail_report_screen.dart';
+import 'package:foundit/screens/reports/detail_report_screen.dart';
 import 'package:foundit/widgets/state_views.dart';
 
 void main() {

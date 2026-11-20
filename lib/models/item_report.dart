@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 /// Status laporan barang.
 class ReportStatus {
@@ -106,7 +106,8 @@ class ChatMessage {
     this.id,
     required this.chatId,
     required this.senderUid,
-    required this.text,
+    this.text = '',
+    this.imageUrl,
     this.createdAt,
   });
 
@@ -114,5 +115,6 @@ class ChatMessage {
   final String chatId;
   final String senderUid;
   final String text;
+  final String? imageUrl;
   final DateTime? createdAt;
 }

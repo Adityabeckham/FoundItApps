@@ -1,16 +1,19 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../models/item_report.dart';
-import '../services/claim_service.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_shadows.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/state_views.dart';
-import 'chat_room_screen.dart';
-import 'claim_screen.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/services/chat_service.dart';
+import 'package:foundit/services/claim_service.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_shadows.dart';
+import 'package:foundit/theme/app_spacing.dart';
+import 'package:foundit/theme/app_text_styles.dart';
+import 'package:foundit/utils/app_transitions.dart';
+import 'package:foundit/widgets/map_preview.dart';
+import 'package:foundit/widgets/state_views.dart';
+import 'package:foundit/screens/chat/chat_room_screen.dart';
+import 'package:foundit/screens/claim/claim_screen.dart';
 
 /// Halaman Detail Laporan Barang.
 class DetailReportScreen extends StatelessWidget {
@@ -155,34 +158,17 @@ class DetailReportScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.s16),
-                  Container(
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: AppColors.bgSubtle,
-                      borderRadius: AppRadius.xlAll,
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.map_rounded,
-                            size: 32,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(height: AppSpacing.s4),
-                          Text(
-                            'Lihat di peta',
-                            style: AppTextStyles.labelM12.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
+                  if (item.latitude != null && item.longitude != null) ...[
+                    const SizedBox(height: AppSpacing.s16),
+                    MapPreview(
+                      key: ValueKey<String>(
+                        '${item.latitude},${item.longitude}',
                       ),
+                      latitude: item.latitude!,
+                      longitude: item.longitude!,
+                      height: 160,
                     ),
-                  ),
+                  ],
                   const SizedBox(height: AppSpacing.s16),
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.s14),
@@ -215,6 +201,7 @@ class DetailReportScreen extends StatelessWidget {
               ),
             ),
             if (_canClaim(item)) _buildClaimBar(context, item),
+            if (_canContact(item)) _buildContactBar(context, item),
           ],
         ),
       ),
@@ -331,24 +318,17 @@ class DetailReportScreen extends StatelessWidget {
                         ? null
                         : () {
                             if (approved) {
-                              Navigator.push(
+                              pushSlide(
                                 context,
-                                MaterialPageRoute<void>(
-                                  builder: (_) => ChatRoomScreen(
-                                    itemId: item.id!,
-                                    itemTitle: item.title,
-                                    ownerUid: item.createdBy ?? 'penemu',
-                                    claimerUid: uid,
-                                  ),
+                                ChatRoomScreen(
+                                  itemId: item.id!,
+                                  itemTitle: item.title,
+                                  ownerUid: item.createdBy ?? 'penemu',
+                                  claimerUid: uid,
                                 ),
                               );
                             } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: (_) => ClaimScreen(item: item),
-                                ),
-                              );
+                              pushSlide(context, ClaimScreen(item: item));
                             }
                           },
                     style: ElevatedButton.styleFrom(
@@ -382,6 +362,82 @@ class DetailReportScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  bool _canContact(ItemReport item) {
+    String? uid;
+    try {
+      uid = FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      uid = null;
+    }
+    return item.id != null &&
+        uid != null &&
+        item.isLost &&
+        item.createdBy != uid &&
+        item.status != ReportStatus.resolved;
+  }
+
+  Widget _buildContactBar(BuildContext context, ItemReport item) {
+    final String uid = FirebaseAuth.instance.currentUser!.uid;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.s20,
+        AppSpacing.s12,
+        AppSpacing.s20,
+        AppSpacing.s20,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.bgSurface,
+        boxShadow: AppShadows.barUp,
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          width: double.infinity,
+          height: 52,
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              final String ownerUid = item.createdBy ?? 'pelapor';
+              try {
+                await ChatService.ensureChat(
+                  itemId: item.id!,
+                  itemTitle: item.title,
+                  ownerUid: ownerUid,
+                  claimerUid: uid,
+                );
+              } catch (_) {}
+              if (!context.mounted) return;
+              pushSlide(
+                context,
+                ChatRoomScreen(
+                  itemId: item.id!,
+                  itemTitle: item.title,
+                  ownerUid: ownerUid,
+                  claimerUid: uid,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            icon: const Icon(
+              Icons.chat_bubble_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            label: Text(
+              'Hubungi Pelapor',
+              style: AppTextStyles.labelXl15.copyWith(color: Colors.white),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

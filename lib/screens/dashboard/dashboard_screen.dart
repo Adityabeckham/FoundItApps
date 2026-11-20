@@ -1,15 +1,16 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/item_report.dart';
-import '../providers/auth_provider.dart';
-import '../providers/item_provider.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/app_bottom_nav.dart';
-import '../widgets/report_card.dart';
-import '../widgets/state_views.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/providers/auth_provider.dart';
+import 'package:foundit/providers/item_provider.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_spacing.dart';
+import 'package:foundit/theme/app_text_styles.dart';
+import 'package:foundit/widgets/app_bottom_nav.dart';
+import 'package:foundit/widgets/report_card.dart';
+import 'package:foundit/widgets/state_views.dart';
+import 'package:foundit/widgets/top_banner.dart';
 
 /// Halaman Beranda (Dashboard Katalog) setelah pengguna login.
 class DashboardScreen extends StatefulWidget {
@@ -35,10 +36,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _navIndex = 0;
   String? _shownError;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -125,16 +128,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _shownError = error;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: AppColors.error,
-          action: SnackBarAction(
-            label: 'Coba Lagi',
-            textColor: AppColors.textOnBrand,
-            onPressed: () => context.read<ItemProvider>().retry(),
-          ),
-        ),
+      TopBanner.error(
+        context,
+        'Gagal memuat data',
+        message: error,
       );
     });
   }
@@ -188,6 +185,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       : null,
                 )
               : ListView(
+                  controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.s20,
                     AppSpacing.s20,
@@ -302,7 +300,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         const SizedBox(width: AppSpacing.s10),
         GestureDetector(
-          onTap: () {},
+          onTap: () => Navigator.pushNamed(context, '/filter-search'),
           child: Container(
             width: 46,
             height: 46,
@@ -356,15 +354,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: AppTextStyles.titleL16,
           ),
         ),
-        GestureDetector(
-          onTap: () {},
-          child: Text(
-            'Lihat semua',
-            style: AppTextStyles.labelM12.copyWith(
-              color: AppColors.primary,
+          GestureDetector(
+            onTap: () => Navigator.pushNamed(context, '/all-reports'),
+            child: Text(
+              'Lihat semua',
+              style: AppTextStyles.labelM12.copyWith(
+                color: AppColors.primary,
+              ),
             ),
           ),
-        ),
       ],
     );
   }

@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../models/item_report.dart';
-import '../theme/app_colors.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/theme/app_colors.dart';
 
 /// Layanan notifikasi lokal FoundIt (flutter_local_notifications).
 ///

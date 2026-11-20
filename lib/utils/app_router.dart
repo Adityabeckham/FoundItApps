@@ -1,17 +1,19 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-import '../screens/chat_list_screen.dart';
-import '../screens/dashboard_screen.dart';
-import '../screens/detail_report_screen.dart';
-import '../screens/login_screen.dart';
-import '../screens/map_screen.dart';
-import '../screens/notifications_screen.dart';
-import '../screens/profile_screen.dart';
-import '../models/item_report.dart';
-import '../screens/onboarding1_screen.dart';
-import '../screens/onboarding2_screen.dart';
-import '../screens/report_form_screen.dart';
-import '../utils/app_transitions.dart';
+import 'package:foundit/screens/chat/chat_list_screen.dart';
+import 'package:foundit/screens/dashboard/dashboard_screen.dart';
+import 'package:foundit/screens/reports/detail_report_screen.dart';
+import 'package:foundit/screens/reports/filter_search_screen.dart';
+import 'package:foundit/screens/reports/reports_list_screen.dart';
+import 'package:foundit/screens/auth/login_screen.dart';
+import 'package:foundit/screens/map/map_screen.dart';
+import 'package:foundit/screens/notifications/notifications_screen.dart';
+import 'package:foundit/screens/profile/profile_screen.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/screens/auth/onboarding1_screen.dart';
+import 'package:foundit/screens/auth/onboarding2_screen.dart';
+import 'package:foundit/screens/reports/report_form_screen.dart';
+import 'package:foundit/utils/app_transitions.dart';
 
 /// Route table terpusat FoundIt.
 class AppRouter {
@@ -40,6 +42,15 @@ class AppRouter {
         break;
       case '/chat':
         page = const ChatListScreen();
+        break;
+      case '/filter-search':
+        page = const FilterSearchScreen();
+        break;
+      case '/all-reports':
+        page = const ReportsListScreen(mine: false, title: 'Semua Laporan');
+        break;
+      case '/my-reports':
+        page = const ReportsListScreen(mine: true, title: 'Laporan Saya');
         break;
       case '/notifications':
         page = const NotificationsScreen();

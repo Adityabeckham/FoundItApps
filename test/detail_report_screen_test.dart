@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:foundit/models/item_report.dart';
-import 'package:foundit/screens/detail_report_screen.dart';
+import 'package:foundit/screens/reports/detail_report_screen.dart';
 
 void main() {
   const ItemReport item = ItemReport(

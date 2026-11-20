@@ -1,9 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-import '../theme/app_shadows.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_text_styles.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_shadows.dart';
+import 'package:foundit/theme/app_spacing.dart';
+import 'package:foundit/theme/app_text_styles.dart';
 
 /// Bottom navigation custom FoundIt (bar navy dengan tombol Lapor di tengah).
 class AppBottomNav extends StatelessWidget {
@@ -18,7 +18,7 @@ class AppBottomNav extends StatelessWidget {
 
   static const List<({IconData icon, String label})> _items = [
     (icon: Icons.home_rounded, label: 'Beranda'),
-    (icon: Icons.map_rounded, label: 'Peta'),
+    (icon: Icons.location_on_rounded, label: 'Peta'),
     (icon: Icons.add_rounded, label: 'Lapor'),
     (icon: Icons.chat_bubble_outline_rounded, label: 'Chat'),
     (icon: Icons.person_outline_rounded, label: 'Profil'),

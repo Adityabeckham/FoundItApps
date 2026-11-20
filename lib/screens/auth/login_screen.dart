@@ -1,12 +1,12 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_spacing.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_text_styles.dart';
+import 'package:foundit/theme/app_spacing.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
+import 'package:foundit/providers/auth_provider.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -370,8 +370,4 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
-
-
-
-
 

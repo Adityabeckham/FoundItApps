@@ -1,15 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../models/item_report.dart';
-import '../services/claim_service.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/state_views.dart';
-import 'chat_room_screen.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/services/claim_service.dart';
+import 'package:foundit/services/image_upload_service.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_spacing.dart';
+import 'package:foundit/theme/app_text_styles.dart';
+import 'package:foundit/utils/app_transitions.dart';
+import 'package:foundit/widgets/state_views.dart';
+import 'package:foundit/widgets/top_banner.dart';
+import 'package:foundit/screens/chat/chat_room_screen.dart';
 
 /// Halaman klaim barang dengan verifikasi pertanyaan rahasia (maks. 3x).
 class ClaimScreen extends StatefulWidget {
@@ -118,18 +120,23 @@ class _ClaimScreenState extends State<ClaimScreen> {
       setState(() => _claim = claim);
 
       if (claim.status == ClaimStatus.approved) {
-        _snack('Klaim disetujui. Membuka chat dengan pemilik...');
+        TopBanner.success(context, 'Klaim disetujui',
+            message: 'Membuka chat dengan pemilik...');
         await _openChat();
       } else if (claim.status == ClaimStatus.rejected) {
-        _snack('Klaim ditolak: Limit Exceeded.');
+        TopBanner.error(context, 'Klaim ditolak',
+            message: 'Limit Exceeded: batas percobaan tercapai.');
       } else {
-        _snack('Jawaban salah. Sisa ${claim.remainingAttempts} percobaan.');
+        TopBanner.info(context, 'Jawaban salah',
+            message: 'Sisa ${claim.remainingAttempts} percobaan.');
         for (final TextEditingController c in _answerControllers) {
           c.clear();
         }
       }
     } catch (e) {
-      _snack('Gagal memproses klaim: $e');
+      if (mounted) {
+        TopBanner.error(context, 'Gagal memproses klaim', message: '$e');
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -144,15 +151,7 @@ class _ClaimScreenState extends State<ClaimScreen> {
         imageQuality: 80,
       );
       if (picked == null) return;
-      final Reference ref = FirebaseStorage.instance
-          .ref()
-          .child('claims/${widget.item.id}_$_uid/proof.jpg');
-      final bytes = await picked.readAsBytes();
-      await ref.putData(
-        bytes,
-        SettableMetadata(contentType: 'image/jpeg'),
-      );
-      final String url = await ref.getDownloadURL();
+      final String url = await ImageUploadService.upload(picked);
       await ClaimService.attachProof(
         itemId: widget.item.id!,
         uid: _uid,
@@ -160,9 +159,10 @@ class _ClaimScreenState extends State<ClaimScreen> {
       );
       if (!mounted) return;
       setState(() => _proofUrl = url);
-      _snack('Bukti serah terima berhasil diunggah.');
+      TopBanner.success(context, 'Bukti terunggah',
+          message: 'Bukti serah terima berhasil diunggah.');
     } catch (e) {
-      _snack('Gagal mengunggah bukti: $e');
+      TopBanner.error(context, 'Gagal mengunggah bukti', message: '$e');
     } finally {
       if (mounted) setState(() => _uploadingProof = false);
     }
@@ -177,9 +177,10 @@ class _ClaimScreenState extends State<ClaimScreen> {
       }
       if (!mounted) return;
       setState(() => _resolved = true);
-      _snack('Laporan ditandai selesai (Resolved).');
+      TopBanner.success(context, 'Laporan selesai',
+          message: 'Status laporan diperbarui menjadi Resolved.');
     } catch (e) {
-      _snack('Gagal menyelesaikan laporan: $e');
+      TopBanner.error(context, 'Gagal menyelesaikan laporan', message: '$e');
     } finally {
       if (mounted) setState(() => _resolving = false);
     }
@@ -188,23 +189,14 @@ class _ClaimScreenState extends State<ClaimScreen> {
   Future<void> _openChat() async {
     if (widget.item.id == null || _uid.isEmpty) return;
     if (!mounted) return;
-    await Navigator.push(
+    await pushSlide(
       context,
-      MaterialPageRoute<void>(
-        builder: (_) => ChatRoomScreen(
-          itemId: widget.item.id!,
-          itemTitle: widget.item.title,
-          ownerUid: widget.item.createdBy ?? 'penemu',
-          claimerUid: _uid,
-        ),
+      ChatRoomScreen(
+        itemId: widget.item.id!,
+        itemTitle: widget.item.title,
+        ownerUid: widget.item.createdBy ?? 'penemu',
+        claimerUid: _uid,
       ),
-    );
-  }
-
-  void _snack(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
     );
   }
 
