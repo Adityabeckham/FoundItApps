@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-import '../screens/dashboard_screen.dart';
-import '../screens/onboarding1_screen.dart';
+import 'package:foundit/screens/dashboard/dashboard_screen.dart';
+import 'package:foundit/screens/auth/onboarding1_screen.dart';
 
 /// Gerbang autentikasi: tampilkan loading, lalu Onboarding atau Dashboard
 /// berdasarkan status login Firebase.

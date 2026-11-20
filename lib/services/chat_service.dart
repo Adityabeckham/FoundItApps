@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import '../data/firestore_collections.dart';
-import '../models/item_report.dart';
+import 'package:foundit/data/firestore_collections.dart';
+import 'package:foundit/models/item_report.dart';
 
 /// Layanan chat privat berbasis Firestore (real-time via snapshots()).
 class ChatService {
@@ -43,7 +44,7 @@ class ChatService {
     });
   }
 
-  /// Stream pesan real-time (urut terlama → terbaru).
+  /// Stream pesan real-time (urut terlama Ã¢â€ â€™ terbaru).
   static Stream<List<ChatMessage>> messagesStream(String id) {
     return _messages(id)
         .orderBy('createdAt', descending: false)
@@ -58,6 +59,7 @@ class ChatService {
               chatId: id,
               senderUid: (d['senderUid'] as String?) ?? '',
               text: (d['text'] as String?) ?? '',
+              imageUrl: d['imageUrl'] as String?,
               createdAt: ts?.toDate(),
             );
           }).toList(),
@@ -68,22 +70,24 @@ class ChatService {
   static Future<void> sendMessage({
     required String chatId,
     required String senderUid,
-    required String text,
+    String text = '',
+    String? imageUrl,
   }) async {
     final String trimmed = text.trim();
-    if (trimmed.isEmpty) return;
+    if (trimmed.isEmpty && (imageUrl == null || imageUrl.isEmpty)) return;
     final WriteBatch batch = FirebaseFirestore.instance.batch();
     final DocumentReference<Map<String, dynamic>> msgRef =
         _messages(chatId).doc();
     batch.set(msgRef, <String, dynamic>{
       'senderUid': senderUid,
       'text': trimmed,
+      'imageUrl': imageUrl,
       'createdAt': FieldValue.serverTimestamp(),
     });
     batch.set(
       chatRef(chatId),
       <String, dynamic>{
-        'lastMessage': trimmed,
+        'lastMessage': trimmed.isEmpty ? 'Ã°Å¸â€œÂ· Foto' : trimmed,
         'lastSenderUid': senderUid,
         'updatedAt': FieldValue.serverTimestamp(),
       },
@@ -115,19 +119,41 @@ class ChatService {
         );
   }
 
-  /// Ambil nama tampilan pengguna.
-  static Future<String> displayName(String uid) async {
+  /// Ambil profil pengguna (nama + foto) dari koleksi `users`.
+  static Future<({String name, String? photoUrl})> userProfile(String uid) async {
     try {
       final DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore
           .instance
           .collection(FirestoreCollections.users)
           .doc(uid)
           .get();
-      final String? name = doc.data()?['displayName'] as String?;
-      if (name != null && name.trim().isNotEmpty) return name;
+      final Map<String, dynamic>? data = doc.data();
+      final String? name = data?['displayName'] as String?;
+      final String? photo = data?['photoUrl'] as String?;
+      if (name != null && name.trim().isNotEmpty) {
+        return (name: name, photoUrl: photo);
+      }
     } catch (_) {
-      // abaikan, gunakan fallback
+      // abaikan, coba fallback Auth di bawah
     }
-    return 'Pengguna';
+    // Fallback ke Firebase Auth bila uid adalah pengguna saat ini.
+    try {
+      final User? u = FirebaseAuth.instance.currentUser;
+      if (u != null && u.uid == uid) {
+        final String? name = u.displayName;
+        if (name != null && name.trim().isNotEmpty) {
+          return (name: name, photoUrl: u.photoURL);
+        }
+      }
+    } catch (_) {
+      // abaikan
+    }
+    return (name: 'Pengguna', photoUrl: null);
+  }
+
+  /// Ambil nama tampilan pengguna (kompatibilitas).
+  static Future<String> displayName(String uid) async {
+    final profile = await userProfile(uid);
+    return profile.name;
   }
 }

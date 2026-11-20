@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../data/firestore_collections.dart';
-import '../models/item_report.dart';
+import 'package:foundit/data/firestore_collections.dart';
+import 'package:foundit/models/item_report.dart';
 
 /// Logika klaim barang: verifikasi jawaban rahasia (maks. 3 percobaan),
 /// penyimpanan bukti serah terima, dan penyelesaian laporan.
@@ -100,5 +100,17 @@ class ClaimService {
       'status': ReportStatus.resolved,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+  }
+
+  /// Stream klaim milik pengguna (untuk hitung jumlah klaim disetujui).
+  static Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>>
+      claimsForUser(String uid) {
+    return FirebaseFirestore.instance
+        .collection(FirestoreCollections.claims)
+        .where('claimerUid', isEqualTo: uid)
+        .snapshots()
+        .map(
+          (QuerySnapshot<Map<String, dynamic>> snap) => snap.docs,
+        );
   }
 }

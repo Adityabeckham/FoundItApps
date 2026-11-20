@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
+import 'package:foundit/theme/app_colors.dart';
 
 /// Text style FoundIt. Sumber: Figma > Design System - Foundations > 2. Tipografi.
 /// Font: Plus Jakarta Sans (daftarkan di pubspec.yaml, lihat README_THEME.md).

@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../data/dummy_reports.dart';
-import '../models/item_report.dart';
-import '../services/notification_service.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_text_styles.dart';
+import 'package:foundit/data/dummy_reports.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/services/notifications/notification_service.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_spacing.dart';
+import 'package:foundit/theme/app_text_styles.dart';
 
 /// Halaman notifikasi FoundIt + simulasi notifikasi lokal dari data seed.
 class NotificationsScreen extends StatelessWidget {

@@ -1,7 +1,7 @@
-﻿import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
-import '../theme/app_spacing.dart';
+import 'package:flutter/material.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_text_styles.dart';
+import 'package:foundit/theme/app_spacing.dart';
 
 class Onboarding2Screen extends StatelessWidget {
   const Onboarding2Screen({super.key});

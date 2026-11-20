@@ -4,13 +4,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-import '../models/item_report.dart';
-import '../providers/item_provider.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_shadows.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_text_styles.dart';
-import '../widgets/app_bottom_nav.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/providers/item_provider.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_shadows.dart';
+import 'package:foundit/theme/app_spacing.dart';
+import 'package:foundit/theme/app_text_styles.dart';
+import 'package:foundit/widgets/app_bottom_nav.dart';
 
 /// Peta interaktif OpenStreetMap: pin laporan + filter radius terdekat.
 class MapScreen extends StatefulWidget {
@@ -31,8 +31,6 @@ class _MapScreenState extends State<MapScreen> {
   bool _permissionDenied = false;
   double _radiusKm = 3;
   String _typeFilter = 'Semua';
-
-  static const List<double> _radii = <double>[1, 3, 5];
   static const List<String> _types = <String>['Semua', 'Hilang', 'Ditemukan'];
 
   @override
@@ -250,12 +248,12 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Marker _reportMarker(ItemReport report) {
+  Marker _reportMarker(ItemReport report, int number) {
     final Color color = report.isLost ? AppColors.error : AppColors.success;
     return Marker(
       point: LatLng(report.latitude!, report.longitude!),
-      width: 40,
-      height: 40,
+      width: 34,
+      height: 34,
       child: GestureDetector(
         onTap: () => _showReportSheet(report),
         child: Container(
@@ -271,10 +269,13 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ],
           ),
-          child: Icon(
-            report.isLost ? Icons.search_rounded : Icons.check_rounded,
-            color: Colors.white,
-            size: 18,
+          alignment: Alignment.center,
+          child: Text(
+            '$number',
+            style: AppTextStyles.labelM12Semi.copyWith(
+              color: Colors.white,
+              fontSize: 12,
+            ),
           ),
         ),
       ),
@@ -348,7 +349,11 @@ class _MapScreenState extends State<MapScreen> {
                                 ),
                               ),
                             ),
-                          ...reports.map(_reportMarker),
+                          ...reports
+                              .asMap()
+                              .entries
+                              .map((MapEntry<int, ItemReport> e) =>
+                                  _reportMarker(e.value, e.key + 1)),
                         ],
                       ),
                     ],
@@ -360,9 +365,39 @@ class _MapScreenState extends State<MapScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.s12,
+                            vertical: AppSpacing.s8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.bgSurface,
+                            borderRadius: AppRadius.lgAll,
+                            boxShadow: AppShadows.barUp,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Cari di sekitar Bandung',
+                                style: AppTextStyles.titleL16.copyWith(
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.s2),
+                              Text(
+                                'Lost Around Me',
+                                style: AppTextStyles.caption10.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.s8),
                         _buildTypeChips(),
                         const SizedBox(height: AppSpacing.s8),
-                        _buildRadiusChips(),
+                        _buildRadiusSlider(),
                         if (_permissionDenied) ...[
                           const SizedBox(height: AppSpacing.s8),
                           _buildBanner(
@@ -440,35 +475,45 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Widget _buildRadiusChips() {
-    return Row(
-      children: _radii.map((double km) {
-        final bool selected = _radiusKm == km;
-        return Padding(
-          padding: const EdgeInsets.only(right: AppSpacing.s8),
-          child: GestureDetector(
-            onTap: () => setState(() => _radiusKm = km),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: selected ? AppColors.bgInverse : AppColors.bgSurface,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: selected ? AppColors.bgInverse : AppColors.border,
-                ),
-              ),
-              child: Text(
-                '${km.toStringAsFixed(0)} km',
-                style: AppTextStyles.labelS11.copyWith(
-                  color: selected
-                      ? AppColors.textOnBrand
-                      : AppColors.textSecondary,
-                ),
+  Widget _buildRadiusSlider() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Radius pencarian',
+              style: AppTextStyles.labelM12Semi.copyWith(
+                color: AppColors.textPrimary,
               ),
             ),
+            Text(
+              '${_radiusKm.toStringAsFixed(0)} km',
+              style: AppTextStyles.labelM12Semi.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: AppColors.primary,
+            inactiveTrackColor: AppColors.bgAccentSoft,
+            thumbColor: AppColors.primary,
+            overlayColor: AppColors.primary.withValues(alpha: 0.12),
+            trackHeight: 6,
           ),
-        );
-      }).toList(),
+          child: Slider(
+            value: _radiusKm,
+            min: 1,
+            max: 10,
+            divisions: 9,
+            label: '${_radiusKm.toStringAsFixed(0)} km',
+            onChanged: (double v) => setState(() => _radiusKm = v),
+          ),
+        ),
+      ],
     );
   }
 
@@ -575,24 +620,16 @@ class _MapScreenState extends State<MapScreen> {
                               color: AppColors.textPrimary,
                             ),
                           ),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.circle,
-                                size: 8,
-                                color: r.isLost
-                                    ? AppColors.error
-                                    : AppColors.success,
-                              ),
-                              const SizedBox(width: AppSpacing.s4),
-                              if (user != null)
-                                Text(
-                                  _formatDistance(_distanceMeters(user, r)),
-                                  style: AppTextStyles.caption10.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                            ],
+                          const SizedBox(height: AppSpacing.s2),
+                          Text(
+                            user == null
+                                ? r.location
+                                : '${r.location} - ${_formatDistance(_distanceMeters(user, r))}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.caption10.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ],
                       ),

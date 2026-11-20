@@ -1,8 +1,8 @@
-﻿import '../models/item_report.dart';
-import '../theme/app_colors.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/theme/app_colors.dart';
 
 /// Data contoh laporan untuk dashboard & seed Firestore (MVP UTS).
-/// 10 barang hilang/ditemukan di 10 lokasi Kota Bandung.
+/// 5 barang hilang/ditemukan di 5 lokasi Kota Bandung (semua memiliki foto asli).
 const List<ItemReport> dummyReports = [
   ItemReport(
     id: 'item_01',
@@ -76,77 +76,4 @@ const List<ItemReport> dummyReports = [
     longitude: 107.6160,
     reward: 'Imbalan Rp 100.000',
   ),
-  ItemReport(
-    id: 'item_06',
-    title: 'Kacamata Hitam',
-    location: 'Braga',
-    timeAgo: '4 jam lalu',
-    imageAsset: 'assets/images/icon-apps.png',
-    isLost: false,
-    thumbBackground: AppColors.categoryOrangeBg,
-    category: 'Aksesoris',
-    description: 'Kacamata hitam model aviator dengan lensa polarized.',
-    latitude: -6.9175,
-    longitude: 107.6090,
-    secretQuestions: <String>['Apa merk kacamata?'],
-    secretAnswers: <String>['Rayban'],
-  ),
-  ItemReport(
-    id: 'item_07',
-    title: 'Botol Minum Tupperware',
-    location: 'Alun-alun Bandung',
-    timeAgo: '6 jam lalu',
-    imageAsset: 'assets/images/icon-apps.png',
-    isLost: true,
-    thumbBackground: AppColors.categoryGreenBg,
-    category: 'Lainnya',
-    description: 'Botol minum Tupperware biru 1 liter dengan tutup sport.',
-    latitude: -6.9219,
-    longitude: 107.6066,
-  ),
-  ItemReport(
-    id: 'item_08',
-    title: 'Charger Laptop',
-    location: 'Trans Studio Bandung',
-    timeAgo: '8 jam lalu',
-    imageAsset: 'assets/images/icon-apps.png',
-    isLost: false,
-    thumbBackground: AppColors.categoryPurpleBg,
-    category: 'Elektronik',
-    description: 'Charger laptop 65W dengan kabel hitam dan kepala USB-C.',
-    latitude: -6.9270,
-    longitude: 107.6360,
-    secretQuestions: <String>['Apa merk charger?', 'Warna kabel?'],
-    secretAnswers: <String>['Lenovo', 'Hitam'],
-  ),
-  ItemReport(
-    id: 'item_09',
-    title: 'Payung Lipat',
-    location: 'Cihampelas',
-    timeAgo: '1 hari lalu',
-    imageAsset: 'assets/images/icon-apps.png',
-    isLost: true,
-    thumbBackground: AppColors.categoryBlueBg,
-    category: 'Lainnya',
-    description: 'Payung lipat motif garis biru putih, gagang kayu.',
-    latitude: -6.8940,
-    longitude: 107.6030,
-  ),
-  ItemReport(
-    id: 'item_10',
-    title: 'Jam Tangan Casio',
-    location: 'Buah Batu',
-    timeAgo: '2 hari lalu',
-    imageAsset: 'assets/images/icon-apps.png',
-    isLost: false,
-    thumbBackground: AppColors.categoryOrangeBg,
-    category: 'Aksesoris',
-    description: 'Jam tangan Casio digital dengan tali karet hitam.',
-    latitude: -6.9400,
-    longitude: 107.6350,
-    secretQuestions: <String>['Apa warna jam?', 'Ada goresan?'],
-    secretAnswers: <String>['Hitam', 'Tidak'],
-  ),
 ];
-
-

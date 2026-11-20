@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import '../models/item_report.dart';
-import '../theme/app_colors.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/theme/app_colors.dart';
 
 /// Stub notifikasi untuk platform web (flutter_local_notifications tidak
 /// mendukung web). Semua panggilan menjadi no-op.

@@ -8,7 +8,7 @@
 | uid | string | ID pengguna (PK) |
 | displayName | string | Nama tampilan |
 | photoUrl | string? | URL foto profil |
-| email | string? | Email |
+| email | string? | Email |\n| updatedAt | timestamp? | Update terakhir |
 
 ### `items`
 | Field | Tipe | Keterangan |
@@ -21,13 +21,13 @@
 | imageAsset / imageUrl | string | Foto barang |
 | isLost | boolean | true = hilang, false = ditemukan |
 | category | string | Kategori |
-| status | string | Open / Waiting for Owner / Approved / Resolved |
+| status | string | Open / Waiting for Owner / Approved / Rejected / Resolved |
 | secretQuestions | array<string> | Pertanyaan rahasia (1-3, untuk Found) |
 | secretAnswers | array<string> | Kunci jawaban pertanyaan rahasia (untuk verifikasi klaim) |
 | reward | string? | Imbalan |
 | timeAgo | string | Waktu relatif (display) |
 | createdAt | timestamp | Waktu dibuat |
-| createdBy | string | UID penemu/pelapor |
+| createdBy | string? | UID penemu/pelapor |\n| updatedAt | timestamp? | Update terakhir (mis. saat Resolved) |
 
 ### `claims`
 | Field | Tipe | Keterangan |
@@ -69,4 +69,4 @@
 ## Catatan
 - Semua ID memakai Firestore auto-ID (tidak pakai uuid).
 - Seed data: 10 item di 10 lokasi Kota Bandung (lihat `lib/data/dummy_reports.dart`).
-- Status flow: Open → Waiting for Owner → Approved → Resolved; klaim gagal 3x → Rejected (Limit Exceeded).
+- Status flow: Open â†’ Waiting for Owner â†’ Approved â†’ Resolved; klaim gagal 3x â†’ Rejected (Limit Exceeded).

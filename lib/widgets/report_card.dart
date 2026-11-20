@@ -1,10 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-import '../models/item_report.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
-import '../theme/app_text_styles.dart';
-import 'status_badge.dart';
+import 'package:foundit/models/item_report.dart';
+import 'package:foundit/theme/app_colors.dart';
+import 'package:foundit/theme/app_spacing.dart';
+import 'package:foundit/theme/app_text_styles.dart';
+import 'package:foundit/widgets/status_badge.dart';
 
 /// Kartu ringkas satu laporan barang untuk katalog dashboard.
 class ReportCard extends StatelessWidget {
